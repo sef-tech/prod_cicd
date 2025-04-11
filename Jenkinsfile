@@ -77,6 +77,32 @@ pipeline {
             }
         }
 
+        stage('Docker Build & Tag') {
+            steps {
+                script {
+                withDockerRegistry(credentialsId: 'docker', toolName: 'docker') {
+                    sh 'docker build -t seftech/blogapp:latest .'
+               }
+               }
+            }
+        }
+        
+        stage('Trivy Image Scan') {
+            steps {
+                sh 'trivy image --format table -o image.yaml seftech/blogapp:latest'
+            }
+        }
+        
+        stage('Docker Push Image') {
+            steps {
+                script {
+                withDockerRegistry(credentialsId: 'docker', toolName: 'docker') {
+                    sh 'docker push seftech/blogapp:latest'
+                  }
+               }
+            }
+        }
+        
         stage('Greeting') {
             steps {
                 echo 'Hello World'
